@@ -39,7 +39,7 @@ async def comando_partidos(update, context):
     
     partidos = analizador.obtener_partidos(league_id)
     
-    # LÍNEA DE DEPURACIÓN: esto aparecerá en los logs de Render
+    # LÍNEA DE DEPURACIÓN: aparecerá en los logs de Render
     print(f"DEBUG: Partidos recibidos para {comando}: {partidos}")
     
     if not partidos:
@@ -61,11 +61,14 @@ async def comando_partidos(update, context):
 
 if __name__ == "__main__":
     token = os.getenv("TOKEN")
-    app = ApplicationBuilder().token(token).build()
-    
-    app.add_handler(CommandHandler("start", start))
-    for cmd in LIGAS.keys():
-        app.add_handler(CommandHandler(cmd, comando_partidos))
+    if not token:
+        print("ERROR: No se encontró el TOKEN en las variables de entorno.")
+    else:
+        app = ApplicationBuilder().token(token).build()
         
-    print("--- TONY CRASH INICIADO ---")
-    app.run_polling()
+        app.add_handler(CommandHandler("start", start))
+        for cmd in LIGAS.keys():
+            app.add_handler(CommandHandler(cmd, comando_partidos))
+            
+        print("--- TONY CRASH INICIADO ---")
+        app.run_polling()

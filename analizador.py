@@ -15,14 +15,13 @@ class Analizador:
         fecha_hoy = date.today().strftime("%Y-%m-%d")
         url = f"{self.base_url}/fixtures"
         params = {"date": fecha_hoy, "league": league_id, "season": season}
-        response = requests.get(url, headers=self.headers, params=params).json()
-        return response.get("response", [])
-    
-        params = {"date": fecha_hoy, "league": league_id, "season": season}
         
         try:
-            response = requests.get(url, headers=self.headers, params=params).json()
-            return response.get("response", [])
+            response = requests.get(url, headers=self.headers, params=params)
+            # Imprimir estado para depurar en los logs de Render
+            print(f"Status Code API: {response.status_code}")
+            data = response.json()
+            return data.get("response", [])
         except Exception as e:
             print(f"Error consultando API: {e}")
             return []
