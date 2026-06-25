@@ -1,6 +1,6 @@
 import requests
 import os
-from datetime import date
+from datetime import date, timedelta
 
 class Analizador:
     def __init__(self):
@@ -13,8 +13,10 @@ class Analizador:
 
     def obtener_partidos(self, league_id, season="2026"):
         fecha_hoy = date.today().strftime("%Y-%m-%d")
+        fecha_fin = date.today() + timedelta(days=3)
+
         url = f"{self.base_url}/fixtures"
-        params = {"date": fecha_hoy, "league": league_id, "season": season}
+        params = {"from": fecha_hoy,"to": fecha_fin.strftime("%Y-%m-%d"), "league": league_id, "season": season}
         try:
             response = requests.get(url, headers=self.headers, params=params)
             print(f"DEBUG: Status Code API: {response.status_code}")
