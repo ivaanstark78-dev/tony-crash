@@ -18,12 +18,11 @@ async def comando_analizar_texto(update: Update, context: ContextTypes.DEFAULT_T
     
     # Buscamos el nombre del mercado y su cuota en decimal.
     # Esto detectará patrones como: "Over 1.5 2.65"
-    patrones = re.findall(r"([a-zA-Z\s]+[\d\.]*)\s+(\d+\.\d+)", texto)
+    patrones = re.findall(r"([a-zA-Z\s]+)\s+(\d+\.\d+)", texto)
     
     if not patrones:
         await update.message.reply_text(
-            "❌ No detecté mercados válidos. Usa el formato: Mercado Cuota\n"
-            "Ejemplo: /analizar_texto Over 1.5 2.65 Corner 1.90"
+            "❌ No detecté mercados. Usa: Nombre Cuota (ej: Colombia 3.45)"
         )
         return
 
