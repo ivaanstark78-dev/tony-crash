@@ -8,7 +8,7 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 analizador = Analizador()
 
-LIGAS = {"mx": "140", "premier": "39", "espana": "140", "europa": "2", "World Cup": "1"}
+LIGAS = {"mx": "140", "premier": "39", "espana": "140", "europa": "2", "mundial": "1"}
 MI_ID = "8911212145"
 
 async def comando_partidos(update, context):
