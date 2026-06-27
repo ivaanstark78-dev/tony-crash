@@ -16,7 +16,7 @@ class Analizador:
         fecha_fin = date.today() + timedelta(days=3)
 
         url = f"{self.base_url}/fixtures"
-        params = {"from": fecha_hoy,"to": fecha_fin.strftime("%Y-%m-%d"), "league": league_id, "season": season}
+        params = {"league": league_id, "season": season, "from": "2026-06-01", "to":"2026-06-30"}
         try:
             response = requests.get(url, headers=self.headers, params=params)
             print(f"DEBUG: Status Code API: {response.status_code}")
