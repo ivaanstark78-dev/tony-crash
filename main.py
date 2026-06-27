@@ -24,6 +24,10 @@ async def comando_partidos(update, context):
     
     partidos = analizador.obtener_partidos(league_id)
     print(f"DEBUG: Partidos recibidos para {comando}: {partidos}")
+    if partidos and "error_debug" in partidos[0]:
+        await update.message.reply_text(f"Error al obtener partidos: {partidos[0]['error_debug']}")
+        print(f"DEBUG: Error al obtener partidos para {comando}: {partidos[0]['error_debug']}")
+        return
     
     if not partidos:
         await update.message.reply_text(f"No hay partidos programados hoy para {comando.upper()}.")

@@ -1,6 +1,5 @@
 import requests
 import os
-from datetime import date, timedelta
 
 class Analizador:
     def __init__(self):
@@ -12,15 +11,25 @@ class Analizador:
         self.base_url = "https://v3.football.api-sports.io"
 
     def obtener_partidos(self, league_id, season="2026"):
-        fecha_hoy = date.today().strftime("%Y-%m-%d")
-        fecha_fin = date.today() + timedelta(days=3)
-
         url = f"{self.base_url}/fixtures"
-        params = {"league": league_id, "season": season, "from": "2026-06-01", "to":"2026-06-30"}
+        params = {
+            "league": league_id, 
+            "season": season, 
+            "from": "2026-06-01", 
+            "to": "2026-06-30"
+        }
+        
         try:
             response = requests.get(url, headers=self.headers, params=params)
-            print(f"DEBUG API: {response.json()}")
-            return response.json().get("response", [])
+            data = response.json()
+            
+            # Si la lista de partidos está vacía, enviamos el JSON crudo 
+            # para depurar qué está pasando exactamente
+            if not data.get("response"):
+                return [{"error_debug": str(data)}]
+                
+            return data.get("response", [])
+            
         except Exception as e:
             print(f"DEBUG: Error consultando API: {e}")
-            return []
+            return [{"error_debug": f"Error de conexión: {str(e)}"}]
