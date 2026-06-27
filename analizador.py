@@ -19,7 +19,7 @@ class Analizador:
         params = {"league": league_id, "season": season, "from": "2026-06-01", "to":"2026-06-30"}
         try:
             response = requests.get(url, headers=self.headers, params=params)
-            print(f"DEBUG: Status Code API: {response.status_code}")
+            print(f"DEBUG API: {response.json()}")
             return response.json().get("response", [])
         except Exception as e:
             print(f"DEBUG: Error consultando API: {e}")
