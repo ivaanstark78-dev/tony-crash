@@ -1,54 +1,43 @@
-import logging
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
-from dotenv import load_dotenv
-from telegram.ext import ApplicationBuilder, CommandHandler
-from analizador import Analizador
 
-load_dotenv()
-logging.basicConfig(level=logging.INFO)
-analizador = Analizador()
+# --- IMPORTA AQUÍ TUS MÓDULOS ---
+# from analizador import Analizador 
+# analizador = Analizador()
 
-LIGAS = {"mx": "140", "premier": "39", "espana": "140", "europa": "2", "mundial": "1"}
-MI_ID = "8911212145"
+async def comando_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Tony Crash iniciado. Escribe /valor [cuota] [probabilidad] para analizar una apuesta.")
 
-async def comando_partidos(update, context):
-    comando = update.message.text.replace("/", "").lower()
-    if comando == "debug":
-        await update.message.reply_text("Consultando ligas disponibles...")
-        return
-    league_id = LIGAS.get(comando)
-    
-    if not league_id:
-        await update.message.reply_text("Liga no reconocida.")
-        return
-    
-    partidos = analizador.obtener_partidos(league_id)
-    print(f"DEBUG: Partidos recibidos para {comando}: {partidos}")
-    if partidos and "error_debug" in partidos[0]:
-        await update.message.reply_text(f"Error al obtener partidos: {partidos[0]['error_debug']}")
-        print(f"DEBUG: Error al obtener partidos para {comando}: {partidos[0]['error_debug']}")
-        return
-    
-    if not partidos:
-        await update.message.reply_text(f"No hay partidos programados hoy para {comando.upper()}.")
-        print("DEBUG: Enviado mensaje de 'No hay partidos'")
-        return
-    
-    mensaje = f"⚽ *Partidos de hoy ({comando.upper()}):*\n\n"
-    for p in partidos:
-        home = p['teams']['home']['name']
-        away = p['teams']['away']['name']
-        mensaje += f"🔹 {home} vs {away}\n"
-    
-    print(f"DEBUG: Enviando mensaje al usuario ID: {MI_ID}")
-    await context.bot.send_message(chat_id=MI_ID, text=mensaje, parse_mode="Markdown")
-    await update.message.reply_text(f"✅ Los datos de {comando.upper()} han sido enviados.")
+# --- NUEVA FUNCIÓN DE VALOR ---
+async def comando_valor(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        # El usuario escribe /valor [cuota] [probabilidad]
+        cuota = float(context.args[0])
+        probabilidad = float(context.args[1])
+        
+        # Fórmula de Valor Esperado (EV)
+        ev = (probabilidad * cuota) - 1
+        porcentaje = ev * 100
+        
+        if ev > 0:
+            resultado = f"✅ ¡TIENE VALOR! EV: {porcentaje:.2f}%. Esta apuesta es matemáticamente rentable."
+        else:
+            resultado = f"❌ SIN VALOR. EV: {porcentaje:.2f}%. A largo plazo perderás dinero con esta cuota."
+            
+        await update.message.reply_text(resultado)
+    except (IndexError, ValueError):
+        await update.message.reply_text("Uso correcto: /valor [cuota] [probabilidad]\nEjemplo: /valor 1.85 0.60")
 
-if __name__ == "__main__":
-    token = os.getenv("TOKEN")
+if __name__ == '__main__':
+    # Obtén tu token de las variables de entorno
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
     app = ApplicationBuilder().token(token).build()
-    app.add_handler(CommandHandler("start", lambda u, c: u.message.reply_text("Hola!")))
-    for cmd in LIGAS.keys():
-        app.add_handler(CommandHandler(cmd, comando_partidos))
+
+    # --- REGISTRO DE COMANDOS ---
+    app.add_handler(CommandHandler("start", comando_start))
+    app.add_handler(CommandHandler("valor", comando_valor))
+    # Aquí irían tus otros comandos como /mx, /mundial, etc.
+
     print("--- TONY CRASH INICIADO ---")
     app.run_polling()
