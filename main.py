@@ -8,11 +8,14 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 analizador = Analizador()
 
-LIGAS = {"mx": "140", "premier": "39", "espana": "140", "europa": "2", "mundial": "1"}
+LIGAS = {"mx": "140", "premier": "39", "espana": "140", "europa": "2", "World Cup 2026": "1"}
 MI_ID = "8911212145"
 
 async def comando_partidos(update, context):
     comando = update.message.text.replace("/", "").lower()
+    if comando == "debug":
+        await update.message.reply_text("Consultando ligas disponibles...")
+        return
     league_id = LIGAS.get(comando)
     
     if not league_id:
