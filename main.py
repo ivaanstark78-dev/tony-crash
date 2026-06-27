@@ -8,54 +8,62 @@ from analizador import Analizador
 analizador = Analizador()
 
 async def comando_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Tony Crash activo. Usa /analizar_texto [EquipoA] vs [EquipoB] [momio]")
+    await update.message.reply_text(
+        "🚀 Tony Crash activo como Asesor.\n"
+        "Envía tus opciones así:\n/analizar_texto Over 1.5 2.65 Under 1.5 1.41 Corner 7 1.90"
+    )
 
 async def comando_analizar_texto(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    texto_completo = " ".join(context.args)
+    texto = " ".join(context.args)
     
-    # Buscamos equipos y momio
-    equipos = re.search(r"([A-Za-z\s]+)\s+vs\s+([A-Za-z\s]+)", texto_completo, re.IGNORECASE)
-    momio_match = re.search(r"([+-]\d+)", texto_completo)
+    # Buscamos el nombre del mercado y su cuota en decimal.
+    # Esto detectará patrones como: "Over 1.5 2.65"
+    patrones = re.findall(r"([a-zA-Z\s]+[\d\.]*)\s+(\d+\.\d+)", texto)
     
-    if not equipos or not momio_match:
-        await update.message.reply_text("❌ Formato incorrecto. Usa: /analizar_texto EquipoA vs EquipoB [momio]")
+    if not patrones:
+        await update.message.reply_text(
+            "❌ No detecté mercados válidos. Usa el formato: Mercado Cuota\n"
+            "Ejemplo: /analizar_texto Over 1.5 2.65 Corner 1.90"
+        )
         return
 
-    equipo1 = equipos.group(1).strip()
-    equipo2 = equipos.group(2).strip()
-    momio = int(momio_match.group(1))
+    # Limpiamos los datos extraídos
+    mercados = [{'nombre': p[0].strip(), 'cuota': float(p[1])} for p in patrones]
     
-    # Conversión a cuota decimal
-    cuota = (100 / abs(momio)) + 1 if momio < 0 else (momio / 100) + 1
+    # Usamos el analizador para elegir la mejor opción
+    mejor, mensaje_base = analizador.seleccionar_mejor_opcion(mercados)
     
-    # Estimación de probabilidad (0.85 estándar para favoritos)
+    if not mejor:
+        await update.message.reply_text(mensaje_base)
+        return
+
+    # Estimación de probabilidad (0.85 estándar para este cálculo)
     prob_estimada = 0.85
     
-    # Cálculos usando la clase Analizador
-    ev = analizador.calcular_valor(cuota, prob_estimada)
-    stake = analizador.calcular_stake(cuota, prob_estimada)
+    # Calculamos el stake y le ponemos un TOPE SEGURO de 3.0%
+    stake_calculado = analizador.calcular_stake(mejor['cuota'], prob_estimada)
+    stake_seguro = min(stake_calculado, 3.0)
     
     respuesta = (
-        f"📊 **Análisis para {equipo1} vs {equipo2}**\n\n"
-        f"✅ Cuota: {cuota:.2f}\n"
-        f"📈 Valor Esperado: {ev:.1f}%\n"
-        f"💰 **Stake recomendado:** {stake:.1f}% de tu banca.\n\n"
+        f"🎯 **Análisis Automático (Tony Crash)**\n\n"
+        f"✅ La mejor opción es: **{mejor['nombre']}**\n"
+        f"📈 Cuota: {mejor['cuota']:.2f}\n"
+        f"💰 **Stake recomendado:** {stake_seguro:.1f}% de tu banca.\n\n"
+        f"💡 _Nota: He evaluado {len(mercados)} opción(es). Limitamos el stake a un máximo del 3% para proteger tu capital._"
     )
     
-    if stake < 2:
-        respuesta += "⚠️ **Consejo:** El valor es mínimo. No es una apuesta recomendada."
-    else:
-        respuesta += "🚀 **Consejo:** Tiene valor matemático. Mantén el stake bajo control."
-        
     await update.message.reply_text(respuesta)
 
 if __name__ == '__main__':
     token = os.getenv("TELEGRAM_BOT_TOKEN")
+    
     if not token:
         print("ERROR: El token no está configurado en las variables de entorno.")
     else:
         app = ApplicationBuilder().token(token).build()
+        
         app.add_handler(CommandHandler("start", comando_start))
         app.add_handler(CommandHandler("analizar_texto", comando_analizar_texto))
-        print("--- TONY CRASH: SISTEMA DE ANÁLISIS LISTO ---")
+        
+        print("--- TONY CRASH: ASESOR DE APUESTAS LISTO ---")
         app.run_polling()
