@@ -3,12 +3,12 @@ import os
 
 class Analizador:
     def __init__(self):
-        self.api_key = os.getenv("API_FOOTBALL_KEY")
+        self.api_key = os.getenv("FOOTBALL_DATA_TOKEN")
         self.headers = {
             "x-rapidapi-key": self.api_key,
             "x-rapidapi-host": "v3.football.api-sports.io"
         }
-        self.base_url = "https://v3.football.api-sports.io"
+        self.base_url = "https://api.football-data.org/v4"
 
     def obtener_partidos(self, league_id, season="2026"):
         url = f"{self.base_url}/fixtures"

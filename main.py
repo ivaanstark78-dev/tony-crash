@@ -3,6 +3,12 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 
+# --- COMANDO DE INICIO ---
+async def comando_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Hola! Usa /analizar_texto seguido del partido y momio. Ejemplo: Argentina vs Cabo Verde -589"
+    )
+
 # --- COMANDO PRINCIPAL DE ANÁLISIS ---
 async def comando_analizar_texto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Unimos todos los argumentos en un solo bloque de texto
@@ -50,8 +56,9 @@ if __name__ == '__main__':
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     app = ApplicationBuilder().token(token).build()
 
-    # Registramos el nuevo comando
-    app.add_handler(CommandHandler("analizar_texto", comando_analizar_texto))
+    app.add_handler(CommandHandler("start", comando_start))
+    app.add_handler(CommandHandler("analizar_texto", comando_analizar_texto))   
+
 
     print("--- TONY CRASH: MÓDULO DE ANÁLISIS ACTIVO ---")
     app.run_polling()
